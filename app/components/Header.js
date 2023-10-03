@@ -152,7 +152,7 @@ const Header = () => {
       headers: headers,
       method: "POST",
       body: JSON.stringify(data),
-      // mode: "no-cors",
+      mode: "no-cors",
     };
 
     await fetch("https://expros.com/signup.php", options)
@@ -182,6 +182,7 @@ const Header = () => {
       headers: headers,
       method: "POST",
       body: JSON.stringify(data),
+      mode: "no-cors",
     };
     if (!captchaValue) {
       setError1("captcha", {
