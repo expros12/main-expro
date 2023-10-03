@@ -11,7 +11,7 @@ const SubHeader = () => {
   return (
     <div>
       <div className="bg-gradient-to-r from-[#082857] to-[#3b7fb9]">
-        <div className="container m-auto flex justify-between items-center">
+        <div className="container max-w-[1170px] m-auto flex justify-between items-center">
           <div className="flex">
             <div className="hover:bg-[#636363] cursor-pointer pt-[15px] pb-[15px] pl-[10px] pr-[10px] flex flex-col items-center">
               <Image

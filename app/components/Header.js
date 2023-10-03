@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import exprologo from "/public/assets/exprologo.png";
@@ -9,7 +9,11 @@ import axios from "axios";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 import CloseIcon from "@mui/icons-material/Close";
+import { FaXmark } from "react-icons/fa6";
 import { AnimatePresence, motion } from "framer-motion";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 //add
 const Header = () => {
   const {
@@ -39,6 +43,22 @@ const Header = () => {
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
   const [isMailVerificationModal, setIsMailVerificationModal] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
+
+  //header scroll
+  // const [isSticky, setIsSticky] = useState(false);
+  // const headerRef = useRef(null);
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     if (headerRef.current && headerRef.current.getBoundingClientRect) {
+  //       const headerRect = headerRef.current.getBoundingClientRect();
+  //       setIsSticky(headerRect.top <= 0); // Adjust this value if you want to add some spacing
+  //     }
+  //   };
+  //   window.addEventListener("scroll", handleScroll);
+  //   return () => {
+  //     window.removeEventListener("scroll", handleScroll);
+  //   };
+  // }, []);
 
   // Register Validations and values
   const [regCaptcha, setRegcaptcha] = useState(null);
@@ -117,9 +137,9 @@ const Header = () => {
   const handleSubmitSignUp = async (data) => {
     // setIsRegisterModalOpen(false);
     // setIsMailVerificationModal(true);
-    console.log(data);
     const headers = {
       "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "http://localhost:3000/",
     };
     if (!regCaptcha) {
       setError("regCaptcha", {
@@ -132,19 +152,37 @@ const Header = () => {
       headers: headers,
       method: "POST",
       body: JSON.stringify(data),
+      // mode: "no-cors",
     };
 
-    await axios
-      .post("https://expros.com/signup.php", data, { withCredentials: true })
+    await fetch("https://expros.com/signup.php", options)
       .then((res) => {
-        if (res.ok === true) console.log(res);
-        reset();
+        console.log(res);
+        if (res.ok === true)
+          toast("Registration Successfull Please signin", {
+            type: "success",
+            autoClose: 2000,
+          });
+        setTimeout(() => {
+          setIsRegisterModalOpen(false);
+          setIsSignInModalOpen(true);
+        }, 1000);
       })
       .catch((e) => console.log(e));
   };
 
   //submitting login form functions
-  const handleSignInSubmit = (data) => {
+  const handleSignInSubmit = async (data) => {
+    const headers = {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin":
+        "https://expros-6s2znff60-expros-projects-9473ea27.vercel.app/",
+    };
+    const options = {
+      headers: headers,
+      method: "POST",
+      body: JSON.stringify(data),
+    };
     if (!captchaValue) {
       setError1("captcha", {
         type: "manual",
@@ -152,7 +190,14 @@ const Header = () => {
       });
       return;
     }
-    console.log(data);
+    await fetch("https://expros.com/signin.php", options)
+      .then((res) => {
+        console.log(res);
+        if (res.ok === true)
+          toast("Sign In Successfull", { type: "success", autoClose: 3000 });
+        setIsSignInModalOpen(false);
+      })
+      .catch((e) => console.log(e));
     reset();
   };
 
@@ -160,6 +205,7 @@ const Header = () => {
   const handleSubmitforgotPassword = (data) => {
     console.log(data);
   };
+
   const styleRegister = {
     position: "absolute",
     top: "50%",
@@ -203,9 +249,16 @@ const Header = () => {
   };
   return (
     <div>
-      <nav className="container m-auto flex justify-between mt-[10px] pb-[10px]">
+      <ToastContainer />
+      <nav className="container m-auto flex justify-between mt-[10px] pb-[10px] bg-[white] sticky top-0 z-[1]">
         <Link href="/">
-          <Image src={exprologo} alt="logo" width={170} height={150} />
+          <Image
+            src={exprologo}
+            alt="logo"
+            width={170}
+            height={170}
+            className="ml-[42px]"
+          />
         </Link>
         <div className="flex flex-col">
           <ul className="flex items-center self-end h-[36px] bg-gradient-to-r from-[#082857] to-[#3b7fb9]">
@@ -254,7 +307,6 @@ const Header = () => {
           </ul>
         </div>
       </nav>
-
       {/* SignIn modal */}
       {isSignInModalOpen && (
         <div>
@@ -283,10 +335,7 @@ const Header = () => {
                       className="h-[24px] w-[24px] flex items-center justify-center border-[1px] border-[#ccc] rounded-[50%] cursor-pointer hover:rotate-90 transition-transform duration-30 ease-in-out"
                       onClick={handleSignInCloseModal}
                     >
-                      <CloseIcon
-                        className="shadow-lg font-semibold rounded-[50%] h-[24px] w-[24px]"
-                        style={{ fontSize: "20", fontWeight: "bold" }}
-                      />
+                      <FaXmark className="shadow-lg font-bold rounded-[50%] text-[15px]" />
                     </button>
                   </div>
                   <form onSubmit={handleSubmit1(handleSignInSubmit)}>
@@ -384,7 +433,7 @@ const Header = () => {
                   className="h-[24px] w-[24px] flex items-center justify-center border-[1px] border-[#ccc] rounded-[50%] cursor-pointer hover:rotate-90 transition-transform duration-30 ease-in-out"
                   onClick={handleRegisterCloseModal}
                 >
-                  <CloseIcon className="h-[24px] w-[24px] rounded-[50%] text-[24px] shadow-lg" />
+                  <FaXmark className="shadow-lg font-bold rounded-[50%] text-[15px]" />
                 </button>
               </div>
               <form
@@ -572,7 +621,7 @@ const Header = () => {
                       className="h-[24px] w-[24px] flex items-center justify-center border-[1px] border-[#ccc] rounded-[50%] cursor-pointer hover:rotate-90 transition-transform duration-30 ease-in-out"
                       onClick={handleForgotCloseModal}
                     >
-                      <CloseIcon className="h-[24px] w-[24px] rounded-[50%] text-[24px] shadow-lg" />
+                      <FaXmark className="shadow-lg font-bold rounded-[50%] text-[15px]" />
                     </button>
                   </div>
                   <form onSubmit={handleSubmit2(handleSubmitforgotPassword)}>
@@ -636,7 +685,7 @@ const Header = () => {
                     className="h-[24px] w-[24px] flex items-center justify-center border-[1px] border-[#ccc] rounded-[50%] cursor-pointer hover:rotate-90 transition-transform duration-30 ease-in-out"
                     onClick={handleVerifyotpModal}
                   >
-                    <CloseIcon className="h-[24px] w-[24px] rounded-[50%]  text-[24px] shadow-lg" />
+                    <FaXmark className="shadow-lg font-bold rounded-[50%] text-[15px]" />
                   </button>
                 </div>
                 <h1 className="text-[25px] font-semibold">
@@ -647,11 +696,19 @@ const Header = () => {
                 </p>
                 <p className="font-bold mt-[5px]">verfication code</p>
                 <input
-                  className="border focus:outline-none rounded-[50px] p-[5px] pl-[10px] shadow-2xl mt-[10px]"
+                  className="placeholder:text-[13px] border focus:outline-none rounded-[10px] p-[5px] pl-[10px] shadow-2xl mt-[10px]"
                   placeholder="Enter OTP here"
                 />{" "}
                 <br />
-                <button className="mt-[10px] rounded-md bg-[#ff4444] font-semibold text-[14px] h-[38px] text-[#fff] pl-[8px] pr-[8px]">
+                <button
+                  className="mt-[10px] rounded-md bg-[#ff4444] font-semibold text-[14px] h-[38px] text-[#fff] pl-[8px] pr-[8px]"
+                  onClick={() =>
+                    toast("OTP verification Successfull", {
+                      type: "success",
+                      autoClose: 2000,
+                    })
+                  }
+                >
                   Submit
                 </button>
               </div>
